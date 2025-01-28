@@ -39,26 +39,37 @@ const isValidPhoneNumber = (number) => {
     return phoneRegex.test(number);
 };
 
-// API Endpoint
+// API Endpoint with Validation
 app.post('/api/customer-data', async (req, res) => {
     try {
         const { name, number, email, city } = req.body;
 
-        // Validation
+        // Check for required fields
         if (!name || !number || !email || !city) {
             return res.status(400).json({ success: false, message: 'All fields are required.' });
         }
 
-        if (!isValidPhoneNumber(number)) {
-            return res.status(400).json({ success: false, message: 'Invalid phone number. Please provide a 10-digit number.' });
+        // Validate phone number (only 10 digits)
+        const phoneRegex = /^\d{10}$/; // 10 digits only
+        const cleanedNumber = number.replace(/\D/g, ''); // Remove non-numeric characters
+        if (!phoneRegex.test(cleanedNumber)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid phone number. Please provide a 10-digit number.',
+            });
         }
 
-        if (!isValidEmail(email)) {
-            return res.status(400).json({ success: false, message: 'Invalid email format.' });
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid email format. Please provide a valid email address.',
+            });
         }
 
         // Save to MongoDB
-        const contact = new Contact({ name, number, email, city });
+        const contact = new Contact({ name, number: cleanedNumber, email, city });
         await contact.save();
 
         res.status(200).json({ success: true, message: 'Contact saved successfully!' });
@@ -67,6 +78,7 @@ app.post('/api/customer-data', async (req, res) => {
         res.status(500).json({ success: false, message: 'An error occurred while saving the contact data.' });
     }
 });
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
