@@ -28,15 +28,33 @@ const contactSchema = new mongoose.Schema({
 
 const Contact = mongoose.model('Contact', contactSchema);
 
+// Helper function for validation
+const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+};
+
+const isValidPhoneNumber = (number) => {
+    const phoneRegex = /^\d{10}$/; // Only 10 digits
+    return phoneRegex.test(number);
+};
+
 // API Endpoint
 app.post('/api/customer-data', async (req, res) => {
     try {
         const { name, number, email, city } = req.body;
 
-        console.log(name, email, number, city)
-        // Check if all required fields are present
+        // Validation
         if (!name || !number || !email || !city) {
             return res.status(400).json({ success: false, message: 'All fields are required.' });
+        }
+
+        if (!isValidPhoneNumber(number)) {
+            return res.status(400).json({ success: false, message: 'Invalid phone number. Please provide a 10-digit number.' });
+        }
+
+        if (!isValidEmail(email)) {
+            return res.status(400).json({ success: false, message: 'Invalid email format.' });
         }
 
         // Save to MongoDB
@@ -49,7 +67,6 @@ app.post('/api/customer-data', async (req, res) => {
         res.status(500).json({ success: false, message: 'An error occurred while saving the contact data.' });
     }
 });
-
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
