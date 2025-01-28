@@ -29,7 +29,7 @@ const contactSchema = new mongoose.Schema({
 const Contact = mongoose.model('Contact', contactSchema);
 
 // API Endpoint
-app.post('/api/customer-data', async (req, res) => {
+app.post('https://contact-server-e4ge.onrender.com', async (req, res) => {
     try {
         const { name, number, email, city } = req.body;
 
